@@ -14,7 +14,7 @@ import java.util.Date;
 public class Event {
     @Id
     @GeneratedValue
-    private  long id;
+    private long id;
 
     private  String description;
 
