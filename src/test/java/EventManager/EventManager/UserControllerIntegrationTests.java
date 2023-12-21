@@ -1,13 +1,10 @@
 package EventManager.EventManager;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +128,19 @@ public class UserControllerIntegrationTests {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/users/1/events/sortByPopularity"))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.events[0].popularity").value(5));
+    }
+
+    @Test
+    public void RateLimitTest() throws Exception {
+
+        for (int i=0;i<20;i++){
+            createUserTest();
+        }
+        JSONObject body = new JSONObject();
+        body.put("name","itai");
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/createUser").content(String.valueOf(body)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isTooManyRequests());
+
     }
 
 
