@@ -16,10 +16,6 @@ public class UserJpaService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
     public User findUser(long id) {
         var user = userRepository.findById(id);
         if (user.isEmpty()) {
@@ -33,5 +29,9 @@ public class UserJpaService {
     }
     public User createUser(User user){
         return userRepository.save(user);
+    }
+
+    public void updateUserEvents(long userId,List<Long> eventIds){
+        userRepository.updateUserEvent(userId,eventIds);
     }
 }

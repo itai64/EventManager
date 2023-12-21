@@ -1,9 +1,9 @@
 package EventManager.EventManager.jpa.beans;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity()
@@ -11,20 +11,19 @@ import java.util.List;
 public class User {
     @Id
     @GeneratedValue
-    private final long id;
+    private  long id;
     @Size(min=2,message = "Name should have at least 2 characters")
-    private final String name;
-
-    @OneToMany(mappedBy = "user",cascade =  { CascadeType.REMOVE })
-    @JsonIgnore()
-    private List<Event> events;
+    private  String name;
+    private List<Long> events;
 
     public User(long id, String name) {
         this.id = id;
         this.name = name;
+        this.events=new ArrayList<>();
     }
+    public User(){this.events=new ArrayList<>();}
 
-    public void setEvents(List<Event> events) {
+    public void setEvents(List<Long> events) {
         this.events = events;
     }
 
@@ -32,12 +31,12 @@ public class User {
         return id;
     }
 
-    public List<Event> getEvents() {
+    public List<Long> getEventsIds() {
         return events;
     }
 
     public void addEvent(Event event){
-        this.events.add(event);
+        this.events.add(event.getId());
     }
 
     public String getName() {

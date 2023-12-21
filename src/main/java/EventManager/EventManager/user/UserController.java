@@ -6,10 +6,8 @@ import EventManager.EventManager.jpa.beans.User;
 import EventManager.EventManager.remainder.EventRemainderService;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,63 +30,112 @@ public class UserController {
         return EntityModel.of(userJpaService.findUser(id));
     }
 
-    @PostMapping(path = "/users")
+    @PostMapping(path = "/users/create")
     public ResponseEntity<User> createUser(@Valid @RequestBody User user){
-        System.out.println("user "+ user);
-       return ResponseEntity.of(Optional.of(userJpaService.createUser(user)));
-
+        try {
+            return ResponseEntity.of(Optional.of(userJpaService.createUser(user)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @DeleteMapping(path = "/users/{id}")
-    public void deleteUser(@PathVariable long id){
-        userJpaService.deleteUser(id);
+    @DeleteMapping(path = "/users/{id}/deleteUser")
+    public ResponseEntity<User> deleteUser(@PathVariable long id){
+        try {
+            userJpaService.deleteUser(id);
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @GetMapping(path = "/users/{id}/events")
+    @GetMapping(path = "/users/{id}/getUserEvents")
     public ResponseEntity<List<Event>> getEventsForUser(@PathVariable long id){
+        try {
         return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUser(id)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping(path = "/users/{id}/events/sortByCreationTime")
     public ResponseEntity<List<Event>> getEventsSortByCreationTimeForUser(@PathVariable long id){
+        try {
         return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByCreationTime(id)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @GetMapping(path = "/users/{id}/sortByDate")
+    @GetMapping(path = "/users/{id}/events/sortByDate")
     public ResponseEntity<List<Event>> getEventsSortByDateForUser(@PathVariable long id){
+        try {
         return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByDate(id)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
-
-    @GetMapping(path = "/users/{id}/events")
+    @GetMapping(path = "/users/{id}/events/sortByPopularity")
     public ResponseEntity<List<Event>> getEventsSortByPopularityForUser(@PathVariable long id){
+        try {
         return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByPopularity(id)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @GetMapping(path = "/users/{id}/events/{location}")
-    public ResponseEntity<List<Event>> getEventsForUserByLocation(@PathVariable long id,@PathVariable String location){
+    @GetMapping(path = "/users/{id}/events/locationFilter/{location}")
+    public ResponseEntity<List<Event>> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
+        try {
         return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserByLocation(id,location)));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
-    @PostMapping(path = "/users/{id}/event")
-    public ResponseEntity<Event> createEvent(@PathVariable long id, @RequestBody @Valid Event event){
-        Event savedEvent=eventJpaService.createPostForUser(id,event);
-        eventRemainderService.runRemainder(id,event);
-        return ResponseEntity.of(Optional.of(savedEvent));
+    @PostMapping(path = "/users/{id}/createEvent")
+    public ResponseEntity<Event> createEvent(@PathVariable long id,@Valid @RequestBody Event event){
+        try {
+            Event savedEvent = eventJpaService.createEventForUser(id,event);
+            eventRemainderService.runRemainder(id,savedEvent);
+            return ResponseEntity.of(Optional.of(savedEvent));
+        }
+        catch (Exception e){
+           e.printStackTrace();
+           return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     @PostMapping(path = "/users/{id}/deleteEvent")
-    public void deleteEvent(@RequestBody @Valid Event event){
+    public ResponseEntity<User> deleteEvent(@RequestBody @Valid Event event){
+        try {
+
        eventJpaService.deleteEvent(event.getId());
        eventRemainderService.deleteRemainder(event);
+       return ResponseEntity.ok().build();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping(path = "/users/{id}/updateEvent")
-    public void updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
-        eventJpaService.updateEvent(event);
-        eventRemainderService.updateRemainder(id,event);
+    public ResponseEntity<User> updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
+        try {
+            eventJpaService.updateEvent(event);
+            eventRemainderService.updateRemainder(id, event);
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+        e.printStackTrace();
+        return ResponseEntity.internalServerError().build();
     }
-
-
-
-
+    }
 }

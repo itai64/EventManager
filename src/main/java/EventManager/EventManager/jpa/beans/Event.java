@@ -3,6 +3,8 @@ package EventManager.EventManager.jpa.beans;
 import jakarta.persistence.*;
 import org.hibernate.type.descriptor.DateTimeUtils;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
 import java.util.Date;
@@ -12,26 +14,31 @@ import java.util.Date;
 public class Event {
     @Id
     @GeneratedValue
-    private final int id;
+    private  long id;
 
-    private final String description;
+    private  String description;
 
     private int popularity;
 
-    private Date eventDate;
-    private final Date creationTime;
+    private LocalDateTime eventDate;
+    private final LocalDateTime creationTime;
 
     private String location;
 
-    public Event(int id, String description, int popularity,Date eventDate,Date creationTime) {
+    public Event(int id, String description, int popularity,LocalDateTime eventDate) {
         this.id = id;
         this.description = description;
         this.popularity = popularity;
         this.eventDate = eventDate;
-        this.creationTime=creationTime;
+        this.creationTime= LocalDateTime.now();
+    }
+    public Event(){
+        this.eventDate = LocalDateTime.now();
+
+        this.creationTime=LocalDateTime.now();
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
     public String getDescription() {
@@ -40,34 +47,25 @@ public class Event {
     public int getPopularity() {
         return popularity;
     }
-    public Date getEventDate(){return eventDate;}
+    public LocalDateTime getEventDate(){return eventDate;}
     public String getLocation(){return location;}
-    public Date getCreationTime(){return creationTime;}
+    public LocalDateTime getCreationTime(){return creationTime;}
     public void setPopularity(int popularity){this.popularity = popularity;}
     public void setLocation(String location){this.location=location;}
 
-    public void setEventDate(Date eventDate){
+    public void setEventDate(LocalDateTime eventDate){
         this.eventDate= eventDate;
     }
 
-    public static Comparator<Event> compareEventsByDate= new Comparator<>() {
-        @Override
-        public int compare(Event event,Event otherEvent) {
-            return Long.compare(event.getEventDate().getTime(),otherEvent.eventDate.getTime());
-        }
-    } ;
-
-    public static Comparator<Event> compareEventsByPopularity= new Comparator<>() {
-        @Override
-        public int compare(Event event,Event otherEvent) {
-            return Integer.compare(event.getPopularity(),otherEvent.getPopularity());
-        }
-    } ;
-
-    public static Comparator<Event> compareEventsByCreationTime= new Comparator<>() {
-        @Override
-        public int compare(Event event,Event otherEvent) {
-            return Long.compare(event.getCreationTime().getTime(),otherEvent.getCreationTime().getTime());
-        }
-    } ;
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", description='" + description + '\'' +
+                ", popularity=" + popularity +
+                ", eventDate=" + eventDate +
+                ", creationTime=" + creationTime +
+                ", location='" + location + '\'' +
+                '}';
+    }
 }

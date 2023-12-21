@@ -1,22 +1,25 @@
 package EventManager.EventManager.remainder;
 
 import EventManager.EventManager.jpa.beans.Event;
-import EventManager.EventManager.jpa.beans.User;
+import org.springframework.stereotype.Service;
 
-import java.sql.Time;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Service
 public class EventRemainderService {
 
-    Map <Integer,Timer> timers = new HashMap<>();
+    Map <Long,Timer> timers = new HashMap<>();
 
     private final static long MIN_TIME_FOR_REMAINDER = 30;
 
     public void runRemainder(long userId,Event event) {
-        long timeToEventInSec = TimeUnit.MILLISECONDS.toMinutes(event.getEventDate().getTime() - System.currentTimeMillis());
+        long timeToEventInSec = ChronoUnit.MINUTES.between(LocalDateTime.now(),event.getEventDate() );
         if (timeToEventInSec  <= MIN_TIME_FOR_REMAINDER){
             System.out.println(timeToEventInSec +" minutes is not valid time for remainder");
+            timers.remove(event.getId());
             return;
         }
 
@@ -28,8 +31,7 @@ public class EventRemainderService {
         };
         Timer timer = new Timer("Timer");
         timers.put(event.getId(),timer);
-
-        timer.schedule(task, new Date(event.getEventDate().getTime() - TimeUnit.MINUTES.toMillis(30)));
+        timer.schedule(task,ChronoUnit.MILLIS.between(LocalDateTime.now(),event.getEventDate().minusMinutes(30)));
     }
 
     public void updateRemainder(long userId,Event event){
@@ -38,8 +40,11 @@ public class EventRemainderService {
     }
 
     public void deleteRemainder(Event event){
+
         Timer timer = timers.get(event.getId());
-        timers.remove(event.getId());
-        timer.cancel();
+        if (timer != null){
+            timers.remove(event.getId());
+            timer.cancel();
+        }
     }
 }
