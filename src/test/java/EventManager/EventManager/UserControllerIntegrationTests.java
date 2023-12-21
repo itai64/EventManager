@@ -132,8 +132,9 @@ public class UserControllerIntegrationTests {
 
     @Test
     public void RateLimitTest() throws Exception {
+        //if you will test this function with all others the rating limitation will fail other test.
 
-        for (int i=0;i<20;i++){
+        for (int i=0;i<40;i++){
             createUserTest();
         }
         JSONObject body = new JSONObject();

@@ -32,7 +32,7 @@ public class UserController {
         this.userJpaService = userJpaService;
         this.eventJpaService = eventJpaService;
         this.eventRemainderService = eventRemainderService;
-        Bandwidth limit = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)));
+        Bandwidth limit = Bandwidth.classic(40, Refill.greedy(40, Duration.ofMinutes(1)));
         this.bucket = Bucket.builder().addLimit(limit).build();
     }
 
