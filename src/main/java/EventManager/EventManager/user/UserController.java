@@ -1,6 +1,10 @@
 package EventManager.EventManager.user;
 
 import EventManager.EventManager.event.EventJpaService;
+import EventManager.EventManager.event.beans.EventByLocationResults;
+import EventManager.EventManager.event.beans.EventsSortByCreationDateResults;
+import EventManager.EventManager.event.beans.EventsSortByEventDateResults;
+import EventManager.EventManager.event.beans.EventsSortByPopularityResults;
 import EventManager.EventManager.jpa.beans.Event;
 import EventManager.EventManager.jpa.beans.User;
 import EventManager.EventManager.remainder.EventRemainderService;
@@ -30,7 +34,7 @@ public class UserController {
         return EntityModel.of(userJpaService.findUser(id));
     }
 
-    @PostMapping(path = "/users/create")
+    @PostMapping(path = "/users/createUser")
     public ResponseEntity<User> createUser(@Valid @RequestBody User user){
         try {
             return ResponseEntity.of(Optional.of(userJpaService.createUser(user)));
@@ -62,9 +66,9 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/sortByCreationTime")
-    public ResponseEntity<List<Event>> getEventsSortByCreationTimeForUser(@PathVariable long id){
+    public ResponseEntity<EventsSortByCreationDateResults> getEventsSortByCreationTimeForUser(@PathVariable long id){
         try {
-        return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByCreationTime(id)));
+        return ResponseEntity.of(Optional.of(new EventsSortByCreationDateResults(eventJpaService.retrieveEventForUserSortByCreationTime(id))));
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
@@ -72,18 +76,18 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/sortByDate")
-    public ResponseEntity<List<Event>> getEventsSortByDateForUser(@PathVariable long id){
+    public ResponseEntity<EventsSortByEventDateResults> getEventsSortByEventDateForUser(@PathVariable long id){
         try {
-        return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByDate(id)));
+        return ResponseEntity.of(Optional.of(new EventsSortByEventDateResults(eventJpaService.retrieveEventForUserSortByDate(id))));
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
     @GetMapping(path = "/users/{id}/events/sortByPopularity")
-    public ResponseEntity<List<Event>> getEventsSortByPopularityForUser(@PathVariable long id){
+    public ResponseEntity<EventsSortByPopularityResults> getEventsSortByPopularityForUser(@PathVariable long id){
         try {
-        return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserSortByPopularity(id)));
+        return ResponseEntity.of(Optional.of(new EventsSortByPopularityResults(eventJpaService.retrieveEventForUserSortByPopularity(id))));
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
@@ -91,9 +95,9 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/locationFilter/{location}")
-    public ResponseEntity<List<Event>> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
+    public ResponseEntity<EventByLocationResults> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
         try {
-        return ResponseEntity.of(Optional.of(eventJpaService.retrieveEventForUserByLocation(id,location)));
+        return ResponseEntity.of(Optional.of(new EventByLocationResults(eventJpaService.retrieveEventForUserByLocation(id,location))));
         }catch (Exception e){
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
@@ -111,10 +115,22 @@ public class UserController {
            e.printStackTrace();
            return ResponseEntity.internalServerError().build();
         }
+    }
+
+    @GetMapping(path = "/users/{id}/getEventById/{eventId}")
+    public ResponseEntity<Event> getEventById(@PathVariable long id,@PathVariable long eventId){
+        try {
+
+            return ResponseEntity.of(eventJpaService.findEvent(eventId));
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
 
     }
 
-    @PostMapping(path = "/users/{id}/deleteEvent")
+    @DeleteMapping(path = "/users/{id}/deleteEvent")
     public ResponseEntity<User> deleteEvent(@RequestBody @Valid Event event){
         try {
 
@@ -128,11 +144,11 @@ public class UserController {
     }
 
     @PostMapping(path = "/users/{id}/updateEvent")
-    public ResponseEntity<User> updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
+    public ResponseEntity<Event> updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
         try {
-            eventJpaService.updateEvent(event);
-            eventRemainderService.updateRemainder(id, event);
-            return ResponseEntity.ok().build();
+           eventJpaService.updateEvent(event);
+           eventRemainderService.updateRemainder(id, event);
+           return ResponseEntity.of(Optional.of(event));
         }catch (Exception e){
         e.printStackTrace();
         return ResponseEntity.internalServerError().build();

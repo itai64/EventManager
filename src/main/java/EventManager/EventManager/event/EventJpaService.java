@@ -7,6 +7,7 @@ import EventManager.EventManager.user.UserJpaService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class EventJpaService {
@@ -27,33 +28,35 @@ public class EventJpaService {
         return saveEvent;
     }
 
-    public List<Event> retrieveEventForUser(long id){
-        return getEvents(userJpaService.findUser(id).getEventsIds());
+    public List<Event> retrieveEventForUser(long userId){
+        return getEvents(userJpaService.findUser(userId).getEventsIds());
     }
 
-    public List<Event> retrieveEventForUserByLocation(long id,String location){
-        return getEventsForUserByLocation(userJpaService.findUser(id).getEventsIds(),location).stream().filter(event -> event.getLocation().equals(location)).toList();
+    public List<Event> retrieveEventForUserByLocation(long userId,String location){
+        return getEventsForUserByLocation(userJpaService.findUser(userId).getEventsIds(),location).stream().filter(event -> event.getLocation().equals(location)).toList();
     }
 
-    public List<Event> retrieveEventForUserSortByDate(long id){
-        return getEventsForUserSortEventDate(userJpaService.findUser(id).getEventsIds());
+    public List<Event> retrieveEventForUserSortByDate(long userId){
+        return getEventsForUserSortEventDate(userJpaService.findUser(userId).getEventsIds());
     }
 
-    public List<Event> retrieveEventForUserSortByCreationTime(long id){
-        return getEventsForUserSortCreationTime(userJpaService.findUser(id).getEventsIds());
+    public List<Event> retrieveEventForUserSortByCreationTime(long userId){
+        return getEventsForUserSortCreationTime(userJpaService.findUser(userId).getEventsIds());
     }
 
-    public List<Event> retrieveEventForUserSortByPopularity(long id){
-        return getEventsForUserSortPopulationDate(userJpaService.findUser(id).getEventsIds());
+    public List<Event> retrieveEventForUserSortByPopularity(long userId){
+        return getEventsForUserSortPopulationDate(userJpaService.findUser(userId).getEventsIds());
     }
 
     public List<Event> retrieveAllEvents(){
         return eventRepository.findAll();
     }
 
-    public void deleteEvent(long id){
-        eventRepository.deleteById(id);
+    public void deleteEvent(long eventId){
+        eventRepository.deleteById(eventId);
     }
+
+    public Optional<Event> findEvent(long eventId){return eventRepository.findById(eventId);}
 
     public void updateEvent(Event updatedeEvent){
         eventRepository.updateEvent(updatedeEvent.getId(),updatedeEvent.getDescription(),updatedeEvent.getPopularity(), updatedeEvent.getLocation(), updatedeEvent.getEventDate());
@@ -77,8 +80,6 @@ public class EventJpaService {
 
     private void handleUserEvent(User user,Event event){
         user.addEvent(event);
-        int size = user.getEventsIds().size();
-        System.out.println("user events size is: "+size+", current event id is:"+ user.getEventsIds().get(size-1));
         userJpaService.updateUserEvents(user.getId(),user.getEventsIds());
     }
 }
