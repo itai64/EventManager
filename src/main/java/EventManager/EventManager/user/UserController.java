@@ -1,10 +1,7 @@
 package EventManager.EventManager.user;
 
 import EventManager.EventManager.event.EventJpaService;
-import EventManager.EventManager.event.beans.EventByLocationResults;
-import EventManager.EventManager.event.beans.EventsSortByCreationDateResults;
-import EventManager.EventManager.event.beans.EventsSortByEventDateResults;
-import EventManager.EventManager.event.beans.EventsSortByPopularityResults;
+import EventManager.EventManager.event.beans.*;
 import EventManager.EventManager.jpa.beans.Event;
 import EventManager.EventManager.jpa.beans.User;
 import EventManager.EventManager.remainder.EventRemainderService;
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 public class UserController {
@@ -83,10 +81,10 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/sortByCreationTime")
-    public ResponseEntity<EventsSortByCreationDateResults> getEventsSortByCreationTimeForUser(@PathVariable long id){
+    public ResponseEntity<EventsResults> getEventsSortByCreationTimeForUser(@PathVariable long id){
         try {
             if (bucket.tryConsume(1)) {
-                return ResponseEntity.of(Optional.of(new EventsSortByCreationDateResults(eventJpaService.retrieveEventForUserSortByCreationTime(id))));
+                return ResponseEntity.of(Optional.of(new EventsResults(eventJpaService.retrieveEventForUserSortByCreationTime(id))));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }catch (Exception e){
@@ -96,10 +94,10 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/sortByDate")
-    public ResponseEntity<EventsSortByEventDateResults> getEventsSortByEventDateForUser(@PathVariable long id){
+    public ResponseEntity<EventsResults> getEventsSortByEventDateForUser(@PathVariable long id){
         try {
             if (bucket.tryConsume(1)) {
-                return ResponseEntity.of(Optional.of(new EventsSortByEventDateResults(eventJpaService.retrieveEventForUserSortByDate(id))));
+                return ResponseEntity.of(Optional.of(new EventsResults(eventJpaService.retrieveEventForUserSortByDate(id))));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }catch (Exception e){
@@ -108,10 +106,10 @@ public class UserController {
         }
     }
     @GetMapping(path = "/users/{id}/events/sortByPopularity")
-    public ResponseEntity<EventsSortByPopularityResults> getEventsSortByPopularityForUser(@PathVariable long id){
+    public ResponseEntity<EventsResults> getEventsSortByPopularityForUser(@PathVariable long id){
         try {
             if (bucket.tryConsume(1)) {
-                return ResponseEntity.of(Optional.of(new EventsSortByPopularityResults(eventJpaService.retrieveEventForUserSortByPopularity(id))));
+                return ResponseEntity.of(Optional.of(new EventsResults(eventJpaService.retrieveEventForUserSortByPopularity(id))));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }catch (Exception e){
@@ -121,10 +119,10 @@ public class UserController {
     }
 
     @GetMapping(path = "/users/{id}/events/locationFilter/{location}")
-    public ResponseEntity<EventByLocationResults> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
+    public ResponseEntity<EventsResults> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
         try {
             if (bucket.tryConsume(1)) {
-                return ResponseEntity.of(Optional.of(new EventByLocationResults(eventJpaService.retrieveEventForUserByLocation(id, location))));
+                return ResponseEntity.of(Optional.of(new EventsResults(eventJpaService.retrieveEventForUserByLocation(id, location))));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
         }catch (Exception e){
@@ -146,6 +144,21 @@ public class UserController {
         catch (Exception e){
            e.printStackTrace();
            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping(path = "/users/{id}/createMultiplyEvent")
+    public ResponseEntity<EventsResults> createMultiplyEvent(@PathVariable long id, @Valid @RequestBody List<Event> events){
+        try {
+            events.forEach(event -> createEvent(id, event));
+            if (bucket.tryConsume(events.size())) {
+                return ResponseEntity.of(Optional.of(new EventsResults(events)));
+            }
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -179,6 +192,19 @@ public class UserController {
         }
     }
 
+    @DeleteMapping(path = "/users/{id}/deleteMultiplyEvents")
+    public ResponseEntity<User> deleteMultiplyEvents(@RequestBody @Valid List<Long> eventIds){
+        try {
+            List<Event> events = eventJpaService.findEvents(eventIds);
+            events.forEach(this::deleteEvent);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PostMapping(path = "/users/{id}/updateEvent")
     public ResponseEntity<Event> updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
         try {
@@ -191,6 +217,18 @@ public class UserController {
         }catch (Exception e){
         e.printStackTrace();
         return ResponseEntity.internalServerError().build();
+        }
     }
+
+    @PostMapping(path = "/users/{id}/updateMultiplyEvents")
+    public ResponseEntity<EventsResults> updateMultiplyEvent(@PathVariable long id,@RequestBody @Valid List<Event> events) {
+        try {
+            events.forEach(event -> updateEvent(id, event));
+            return ResponseEntity.of(Optional.of(new EventsResults(events)));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

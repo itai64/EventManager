@@ -4,10 +4,10 @@ import EventManager.EventManager.jpa.beans.Event;
 
 import java.util.List;
 
-public class EventsSortByPopularityResults {
+public class EventsResults {
     private final List<Event> events;
 
-    public EventsSortByPopularityResults(List<Event> events) {
+    public EventsResults(List<Event> events) {
         this.events = events;
     }
 

@@ -58,6 +58,8 @@ public class EventJpaService {
 
     public Optional<Event> findEvent(long eventId){return eventRepository.findById(eventId);}
 
+    public List<Event> findEvents(List<Long> eventIds){return eventRepository.findAllById(eventIds);}
+
     public void updateEvent(Event updatedeEvent){
         eventRepository.updateEvent(updatedeEvent.getId(),updatedeEvent.getDescription(),updatedeEvent.getPopularity(), updatedeEvent.getLocation(), updatedeEvent.getEventDate());
     }
