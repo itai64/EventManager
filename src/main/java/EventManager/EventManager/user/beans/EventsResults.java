@@ -1,4 +1,4 @@
-package EventManager.EventManager.event;
+package EventManager.EventManager.user.beans;
 
 import EventManager.EventManager.jpa.beans.Event;
 

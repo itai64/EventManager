@@ -1,7 +1,7 @@
 package EventManager.EventManager.user;
 
 import EventManager.EventManager.event.EventJpaService;
-import EventManager.EventManager.event.EventsResults;
+import EventManager.EventManager.user.beans.EventsResults;
 import EventManager.EventManager.event.beans.*;
 import EventManager.EventManager.jpa.beans.Event;
 import EventManager.EventManager.jpa.beans.User;
@@ -436,6 +436,9 @@ public class UserController {
 
     private void notifySubscribers(long eventId,String message) {
         List<Subscriber> subscribers= this.subscribers.get(eventId);
+        if (subscribers == null){
+            return;
+        }
         for (Subscriber subscriber : subscribers) {
             subscriber.notify(message);
         }

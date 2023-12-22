@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -199,5 +198,26 @@ public class UserControllerIntegrationTests {
 
     }
 
+    @Test
+    public void subscribeTest() throws Exception{
+        // I read in the internet that the eventBus open new thread, so the logs of the event not printed.
+        createEventsForUserTest();
+        JSONObject subscriber = new JSONObject();
+        subscriber.put("name","Shoval");
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/createUser").content(String.valueOf(subscriber)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/2/subscribe/1"))
+                .andExpect(status().isOk());
+
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/2/subscribe/2"))
+                .andExpect(status().isOk());
+
+        updateEventTest();
+
+        deleteEventTest();
+
+    }
 
 }
