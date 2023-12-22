@@ -131,12 +131,12 @@ public class UserController {
         }
     }
 
-    @PostMapping(path = "/users/{id}/createEvent")
-    public ResponseEntity<Event> createEvent(@PathVariable long id,@Valid @RequestBody Event event){
+    @PostMapping(path = "/users/{userId}/createEvent")
+    public ResponseEntity<Event> createEvent(@PathVariable long userId,@Valid @RequestBody Event event){
         try {
             if (bucket.tryConsume(1)) {
-                Event savedEvent = eventJpaService.createEventForUser(id, event);
-                eventRemainderService.runRemainder(id, savedEvent);
+                Event savedEvent = eventJpaService.createEventForUser(userId, event);
+                eventRemainderService.runRemainder(userId, savedEvent);
                 return ResponseEntity.of(Optional.of(savedEvent));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -144,6 +144,26 @@ public class UserController {
         catch (Exception e){
            e.printStackTrace();
            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping(path = "/users/{userId}/subscribeEvent")
+    public ResponseEntity<Event> subscribeEvent(@PathVariable long userId,@Valid @RequestBody long eventId){
+        try {
+            if (bucket.tryConsume(1)) {
+                Optional<Event> selectedEvent = eventJpaService.findEvent(eventId);
+                if (selectedEvent.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+                User user = userJpaService.findUser(userId);
+                selectedEvent.get().addListener(user);
+                return ResponseEntity.of(selectedEvent);
+            }
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -183,6 +203,7 @@ public class UserController {
         if (bucket.tryConsume(1)) {
             eventJpaService.deleteEvent(event.getId());
             eventRemainderService.deleteRemainder(event);
+            event.notifySubscribesEventDelete();
             return ResponseEntity.ok().build();
         }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -211,6 +232,7 @@ public class UserController {
             if (bucket.tryConsume(1)) {
                 eventJpaService.updateEvent(event);
                 eventRemainderService.updateRemainder(id, event);
+                event.notifySubscribesEventUpdated();
                 return ResponseEntity.of(Optional.of(event));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();

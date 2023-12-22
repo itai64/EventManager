@@ -1,14 +1,17 @@
 package EventManager.EventManager.jpa.beans;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.eventbus.Subscribe;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 
 @Entity()
 @Table(name = "users")
-public class User {
+public class User implements EventListener{
     @Id
     @GeneratedValue
     private  long id;
@@ -20,6 +23,11 @@ public class User {
         this.id = id;
         this.name = name;
         this.events=new ArrayList<>();
+    }
+
+    @Subscribe
+    public void eventNotification(String message){
+        System.out.println("event changed" + message);
     }
     public User(){this.events=new ArrayList<>();}
 

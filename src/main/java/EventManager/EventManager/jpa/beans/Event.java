@@ -1,13 +1,11 @@
 package EventManager.EventManager.jpa.beans;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.google.common.eventbus.EventBus;
 import jakarta.persistence.*;
-import org.hibernate.type.descriptor.DateTimeUtils;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Comparator;
-import java.util.Date;
+import java.util.EventListener;
 
 @Entity()
 @Table(name = "events")
@@ -15,15 +13,13 @@ public class Event {
     @Id
     @GeneratedValue
     private long id;
-
     private  String description;
-
     private int popularity;
-
     private LocalDateTime eventDate;
     private final LocalDateTime creationTime;
-
     private String location;
+    @Transient
+    EventBus eventBus ;
 
     public Event(int id, String description, int popularity,LocalDateTime eventDate) {
         this.id = id;
@@ -31,11 +27,24 @@ public class Event {
         this.popularity = popularity;
         this.eventDate = eventDate;
         this.creationTime= LocalDateTime.now();
+        this.eventBus = new EventBus();
     }
     public Event(){
         this.eventDate = LocalDateTime.now();
-
         this.creationTime=LocalDateTime.now();
+        this.eventBus = new EventBus();
+    }
+
+    public void notifySubscribesEventDelete(){
+        eventBus.post("Event" + id+" deleted.");
+    }
+
+    public void notifySubscribesEventUpdated(){
+        eventBus.post("Event" + id+" updated.");
+    }
+
+    public void addListener(EventListener listener){
+        eventBus.register(listener);
     }
 
     public long getId() {

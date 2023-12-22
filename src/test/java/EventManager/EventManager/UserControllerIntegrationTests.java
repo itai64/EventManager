@@ -200,5 +200,21 @@ public class UserControllerIntegrationTests {
 
     }
 
+    @Test
+    public void subscribeTest() throws Exception{
+        createEventsForUserTest();
+        JSONObject subscriber = new JSONObject();
+        subscriber.put("name","Shval");
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/createUser").content(String.valueOf(subscriber)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/users/2/subscribeEvent").content(String.valueOf(1)).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        deleteEventTest();
+
+    }
+
 
 }
