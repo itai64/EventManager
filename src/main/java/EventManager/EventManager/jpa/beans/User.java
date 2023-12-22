@@ -1,17 +1,16 @@
 package EventManager.EventManager.jpa.beans;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.eventbus.AllowConcurrentEvents;
 import com.google.common.eventbus.Subscribe;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.List;
 
 @Entity()
 @Table(name = "users")
-public class User implements EventListener{
+public class User {
     @Id
     @GeneratedValue
     private  long id;
@@ -26,6 +25,7 @@ public class User implements EventListener{
     }
 
     @Subscribe
+    @AllowConcurrentEvents
     public void eventNotification(String message){
         System.out.println("event changed" + message);
     }

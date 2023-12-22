@@ -9,6 +9,7 @@ import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import jakarta.validation.Valid;
+import org.springframework.context.event.EventListener;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -221,6 +222,15 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param userId
+     * @param eventId
+     * @return event
+     *
+     * Allow users to subscribe to event. return the selected event.
+     */
+
     @PostMapping(path = "/users/{userId}/subscribeEvent")
     public ResponseEntity<Event> subscribeEvent(@PathVariable long userId,@Valid @RequestBody long eventId){
         try {
@@ -231,6 +241,35 @@ public class UserController {
                 }
                 User user = userJpaService.findUser(userId);
                 selectedEvent.get().addListener(user);
+                return ResponseEntity.of(selectedEvent);
+            }
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     *
+     * @param userId
+     * @param eventId
+     * @return event
+     *
+     * Allow users to remove subscribe from event. return the selected event.
+     */
+
+    @PostMapping(path = "/users/{userId}/unsubscribeEvent")
+    public ResponseEntity<Event> unsubscribeEvent(@PathVariable long userId,@Valid @RequestBody long eventId){
+        try {
+            if (bucket.tryConsume(1)) {
+                Optional<Event> selectedEvent = eventJpaService.findEvent(eventId);
+                if (selectedEvent.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+                }
+                User user = userJpaService.findUser(userId);
+                selectedEvent.get().removeListener(user);
                 return ResponseEntity.of(selectedEvent);
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -316,7 +355,6 @@ public class UserController {
     /**
      *
      * @param eventIds
-     *
      *
      *Allow user to delete multiply events.
      */

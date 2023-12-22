@@ -43,9 +43,11 @@ public class Event {
         eventBus.post("Event" + id+" updated.");
     }
 
-    public void addListener(EventListener listener){
-        eventBus.register(listener);
+    public void addListener(User user){
+        eventBus.register(user);
     }
+
+    public void removeListener(User user){eventBus.unregister(user);}
 
     public long getId() {
         return id;
