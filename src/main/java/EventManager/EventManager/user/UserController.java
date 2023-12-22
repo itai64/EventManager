@@ -362,8 +362,16 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param userId
+     * @param eventId
+     *
+     * Allow to user subscribe to other user event.
+     */
+
     @PostMapping(path = "/users/{userId}/subscribe/{eventId}")
-    public void subscribe(@PathVariable long userId, @PathVariable long eventId) {
+    public void addSubscribe(@PathVariable long userId, @PathVariable long eventId) {
 
         try {
             userJpaService.findUser(userId);
@@ -373,11 +381,19 @@ public class UserController {
                 throw new Exception("event " + eventId + " not found");
             }
 
-            subscribe(eventId,new ConsoleSubscriber(userId));
+            addSubscribe(eventId,new ConsoleSubscriber(userId));
         }catch (Exception e){
             e.printStackTrace();
         }
     }
+
+    /**
+     *
+     * @param userId
+     * @param eventId
+     *
+     * Allow to user subscribe to other user event.
+     */
 
     @PostMapping(path = "/users/{userId}/removeSubscribe/{eventId}")
     public void removeSubscribe(@PathVariable long userId, @PathVariable long eventId) {
@@ -396,7 +412,9 @@ public class UserController {
         }
     }
 
-    public void subscribe(long eventId,Subscriber subscriber) {
+
+
+    public void addSubscribe(long eventId, Subscriber subscriber) {
         List<Subscriber> subscribersList;
         if (this.subscribers.containsKey(eventId)){
             subscribersList=this.subscribers.get(eventId);
