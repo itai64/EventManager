@@ -34,10 +34,23 @@ public class UserController {
         this.bucket = Bucket.builder().addLimit(limit).build();
     }
 
+    /**
+     * @param id
+     * @return
+     *
+     * use to find user by id and return his data. return the user data
+     */
     @GetMapping(path = "/users/{id}")
     public EntityModel<User> findUserById(@PathVariable int id){
         return EntityModel.of(userJpaService.findUser(id));
     }
+
+    /**
+     * @param user
+     * @return User
+     *
+     * Allow clients to create a new user. return the new user data.
+     */
 
     @PostMapping(path = "/users/createUser")
     public ResponseEntity<User> createUser(@Valid @RequestBody User user){
@@ -51,6 +64,13 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     * @param id
+     * @return User
+     *
+     * use to delete user. return the deleted user
+     */
 
     @DeleteMapping(path = "/users/{id}/deleteUser")
     public ResponseEntity<User> deleteUser(@PathVariable long id){
@@ -66,6 +86,14 @@ public class UserController {
         }
     }
 
+    /**
+     * @param id
+     * @return List of events
+     *
+     * use to find all user event's. return all user events.
+     *
+     */
+
     @GetMapping(path = "/users/{id}/getUserEvents")
     public ResponseEntity<List<Event>> getEventsForUser(@PathVariable long id){
 
@@ -80,6 +108,15 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @return list of user event
+     *
+     * use to get all user event sort by creationTime. return the relevant events.
+     *
+     */
+
     @GetMapping(path = "/users/{id}/events/sortByCreationTime")
     public ResponseEntity<EventsResults> getEventsSortByCreationTimeForUser(@PathVariable long id){
         try {
@@ -93,6 +130,15 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @return list of user event
+     *
+     * use to get all user event sort by event date. return the relevant event.
+     *
+     */
+
     @GetMapping(path = "/users/{id}/events/sortByDate")
     public ResponseEntity<EventsResults> getEventsSortByEventDateForUser(@PathVariable long id){
         try {
@@ -105,6 +151,15 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     *
+     * @param id
+     * @return list of user event
+     *
+     * use to get all user event sort by popularity. return the relevant events.
+     *
+     */
     @GetMapping(path = "/users/{id}/events/sortByPopularity")
     public ResponseEntity<EventsResults> getEventsSortByPopularityForUser(@PathVariable long id){
         try {
@@ -117,6 +172,16 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     *
+     * @param id
+     * @param location
+     * @return zc
+     *
+     * use to get all user event in specific location. return all relevant use events.
+     *
+     */
 
     @GetMapping(path = "/users/{id}/events/locationFilter/{location}")
     public ResponseEntity<EventsResults> getEventsByLocationForUser(@PathVariable long id, @PathVariable String location){
@@ -131,12 +196,21 @@ public class UserController {
         }
     }
 
-    @PostMapping(path = "/users/{userId}/createEvent")
-    public ResponseEntity<Event> createEvent(@PathVariable long userId,@Valid @RequestBody Event event){
+    /**
+     *
+     * @param id
+     * @param event
+     * @return event
+     *
+     * Allow user to create event. return the created event.
+     */
+
+    @PostMapping(path = "/users/{id}/createEvent")
+    public ResponseEntity<Event> createEvent(@PathVariable long id,@Valid @RequestBody Event event){
         try {
             if (bucket.tryConsume(1)) {
-                Event savedEvent = eventJpaService.createEventForUser(userId, event);
-                eventRemainderService.runRemainder(userId, savedEvent);
+                Event savedEvent = eventJpaService.createEventForUser(id, event);
+                eventRemainderService.runRemainder(id, savedEvent);
                 return ResponseEntity.of(Optional.of(savedEvent));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -167,6 +241,15 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @param events
+     * @return List<Event>
+     *
+     * Allow user to create multiply event. return the created events.
+     */
+
     @PostMapping(path = "/users/{id}/createMultiplyEvent")
     public ResponseEntity<EventsResults> createMultiplyEvent(@PathVariable long id, @Valid @RequestBody List<Event> events){
         try {
@@ -182,6 +265,15 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param id
+     * @param eventId
+     * @return event
+     *
+     * Allow user to get event by id. return the selected event
+     */
+
     @GetMapping(path = "/users/{id}/getEventById/{eventId}")
     public ResponseEntity<Event> getEventById(@PathVariable long id,@PathVariable long eventId){
         try {
@@ -196,6 +288,14 @@ public class UserController {
         }
 
     }
+
+    /**
+     *
+     * @param event
+     *
+     *
+     *Allow user to delete event
+     */
 
     @DeleteMapping(path = "/users/{id}/deleteEvent")
     public ResponseEntity<User> deleteEvent(@RequestBody @Valid Event event){
@@ -213,6 +313,14 @@ public class UserController {
         }
     }
 
+    /**
+     *
+     * @param eventIds
+     *
+     *
+     *Allow user to delete multiply events.
+     */
+
     @DeleteMapping(path = "/users/{id}/deleteMultiplyEvents")
     public ResponseEntity<User> deleteMultiplyEvents(@RequestBody @Valid List<Long> eventIds){
         try {
@@ -225,6 +333,15 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     *
+     * @param id
+     * @param event
+     * @return event
+     *
+     * Allow user to update event. return the updated event.
+     */
 
     @PostMapping(path = "/users/{id}/updateEvent")
     public ResponseEntity<Event> updateEvent(@PathVariable long id,@RequestBody @Valid Event event){
@@ -241,6 +358,16 @@ public class UserController {
         return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     *
+     * @param id
+     * @param events
+     * @return event
+     *
+     * Allow user to update multiply events. return the updated events.
+     */
+
 
     @PostMapping(path = "/users/{id}/updateMultiplyEvents")
     public ResponseEntity<EventsResults> updateMultiplyEvent(@PathVariable long id,@RequestBody @Valid List<Event> events) {

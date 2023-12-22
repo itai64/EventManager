@@ -16,6 +16,12 @@ public class EventController {
         this.eventJpaService = eventJpaService;
     }
 
+    /**
+     *
+     * @return list of event
+     *
+     * allow to get all users events. return list of events.
+     */
     @GetMapping(path="/getAllEvents")
     public List<Event> getAllEvents(){
         return eventJpaService.retrieveAllEvents();
