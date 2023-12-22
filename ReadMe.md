@@ -1,4 +1,4 @@
-event manager project : 
+**Event Manager Project** : 
 
 Common setup
 Clone the repo and install the dependencies.
@@ -17,7 +17,7 @@ User - represent the client.
 attributes :
 Long id - key of the entity.
 String name - full name of the user.
-List<Long> events - ids of the own user event's.
+List<Long> events - ids of the own user event's. foreign key of Event table.
 
 Event - very client can have many event.
 attributes :
