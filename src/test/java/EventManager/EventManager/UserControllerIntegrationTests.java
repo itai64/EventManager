@@ -200,7 +200,7 @@ public class UserControllerIntegrationTests {
 
     @Test
     public void subscribeTest() throws Exception{
-        // I read in the internet that the event bus open new thread, so the logs of the event not printed.
+        // I read in the internet that the eventBus open new thread, so the logs of the event not printed.
         createEventsForUserTest();
         JSONObject subscriber = new JSONObject();
         subscriber.put("name","Shoval");
