@@ -1,13 +1,11 @@
 package EventManager.EventManager.jpa;
 
 import EventManager.EventManager.jpa.beans.Event;
-import EventManager.EventManager.jpa.beans.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-import java.beans.Transient;
 import java.time.LocalDateTime;
 import java.util.List;
 

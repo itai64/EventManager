@@ -28,24 +28,12 @@ public class EventRemainderService {
             return;
         }
 
-//        TimerTask task = new TimerTask() {
-//            public void run() {
-//                System.out.println("User "+ userId +"have upcoming event "+ event.getId() +" performed on: " + new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30)) + "n" +
-//                        "event's description is: " + event.getDescription());
-//            }
-//        };
-//        Timer timer = new Timer("Timer");
-//        timers.put(event.getId(),timer);
-//        timer.schedule(task,ChronoUnit.MILLIS.between(LocalDateTime.now(),event.getEventDate().minusMinutes(30)));
-
-
         Runnable runTask = ()->{
             System.out.println("User "+ userId +"have upcoming event "+ event.getId() +" performed on: " + new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30)) + "n" +
                     "event's description is: " + event.getDescription());};
 
         ScheduledFuture<?> schedule = executorService.schedule(runTask, ChronoUnit.MILLIS.between(LocalDateTime.now(), event.getEventDate().minusMinutes(30)), TimeUnit.MILLISECONDS);
         executorServicesMap.put(event.getId(),schedule);
-//
     }
 
     public void updateRemainder(long userId,Event event){
