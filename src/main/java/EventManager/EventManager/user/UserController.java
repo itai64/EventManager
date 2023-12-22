@@ -1,6 +1,7 @@
 package EventManager.EventManager.user;
 
 import EventManager.EventManager.event.EventJpaService;
+import EventManager.EventManager.event.EventsResults;
 import EventManager.EventManager.event.beans.*;
 import EventManager.EventManager.jpa.beans.Event;
 import EventManager.EventManager.jpa.beans.User;
@@ -15,9 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.*;
 
 @RestController
 public class UserController {
@@ -25,6 +24,7 @@ public class UserController {
     private final EventJpaService eventJpaService;
     private final EventRemainderService eventRemainderService;
     private final Bucket bucket;
+    private final Map<Long,List<Subscriber>> subscribers;
 
     public UserController(UserJpaService userJpaService, EventJpaService eventJpaService, EventRemainderService eventRemainderService) {
         this.userJpaService = userJpaService;
@@ -32,6 +32,7 @@ public class UserController {
         this.eventRemainderService = eventRemainderService;
         Bandwidth limit = Bandwidth.classic(40, Refill.greedy(40, Duration.ofMinutes(1)));
         this.bucket = Bucket.builder().addLimit(limit).build();
+        this.subscribers = new HashMap<>();
     }
 
     /**
@@ -283,6 +284,7 @@ public class UserController {
         if (bucket.tryConsume(1)) {
             eventJpaService.deleteEvent(event.getId());
             eventRemainderService.deleteRemainder(event);
+            notifySubscribers(event.getId(),"event deleted");
             return ResponseEntity.ok().build();
         }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -328,6 +330,7 @@ public class UserController {
             if (bucket.tryConsume(1)) {
                 eventJpaService.updateEvent(event);
                 eventRemainderService.updateRemainder(id, event);
+                notifySubscribers(event.getId(),"event update");
                 return ResponseEntity.of(Optional.of(event));
             }
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
@@ -358,4 +361,66 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @PostMapping(path = "/users/{userId}/subscribe/{eventId}")
+    public void subscribe(@PathVariable long userId, @PathVariable long eventId) {
+
+        try {
+            userJpaService.findUser(userId);
+            Optional<Event> event = eventJpaService.findEvent(eventId);
+
+            if (event.isEmpty()) {
+                throw new Exception("event " + eventId + " not found");
+            }
+
+            subscribe(eventId,new ConsoleSubscriber(userId));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @PostMapping(path = "/users/{userId}/removeSubscribe/{eventId}")
+    public void removeSubscribe(@PathVariable long userId, @PathVariable long eventId) {
+
+        try {
+            userJpaService.findUser(userId);
+            Optional<Event> event = eventJpaService.findEvent(eventId);
+
+            if (event.isEmpty()) {
+                throw new Exception("event " + eventId + " not found");
+            }
+
+            removeSubscribe(eventId,new ConsoleSubscriber(userId));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void subscribe(long eventId,Subscriber subscriber) {
+        List<Subscriber> subscribersList;
+        if (this.subscribers.containsKey(eventId)){
+            subscribersList=this.subscribers.get(eventId);
+        }else {
+            subscribersList = new ArrayList<>();
+        }
+        subscribersList.add(subscriber);
+        this.subscribers.put(eventId,subscribersList);
+    }
+
+    public void removeSubscribe(long eventId, Subscriber subscriber) {
+        if (!this.subscribers.containsKey(eventId)) {
+            return;
+        }
+        List<Subscriber> subscribersList = this.subscribers.get(eventId);
+        subscribersList.remove(subscriber);
+        this.subscribers.put(eventId,subscribersList);
+    }
+
+    private void notifySubscribers(long eventId,String message) {
+        List<Subscriber> subscribers= this.subscribers.get(eventId);
+        for (Subscriber subscriber : subscribers) {
+            subscriber.notify(message);
+        }
+    }
+
 }
